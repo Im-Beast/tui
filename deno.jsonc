@@ -2,6 +2,10 @@
   "name": "@tui/tui",
   "version": "3.0.0-dev.1",
   "license": "MIT",
+  "exports": {
+    ".": "./src/tui.ts",
+    "./components": "./src/components/mod.ts"
+  },
   "imports": {
     "@tui/strings": "jsr:@tui/strings@^0",
     "@tui/inputs": "jsr:@tui/inputs@^0",
