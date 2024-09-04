@@ -1,11 +1,19 @@
 {
-  "tasks": {
-    "demo": "deno run --watch --allow-hrtime ./examples/demo.ts"
+  "name": "@tui/tui",
+  "version": "3.0.0-dev.1",
+  "license": "MIT",
+  "imports": {
+    "@tui/strings": "jsr:@tui/strings@^0",
+    "@tui/inputs": "jsr:@tui/inputs@^0",
+    "@tui/nice": "jsr:@tui/nice@^0.5",
+    "@tui/signals": "jsr:@tui/signals@^0",
+    "@crayon/crayon": "jsr:@crayon/crayon@4.0.0-alpha.4",
+    "@crayon/color-support": "jsr:@crayon/color-support@2.1.0"
+  },
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true
   },
   "fmt": {
-    "options": {
-      "lineWidth": 120
-    }
-  },
-  "lock": false
+    "lineWidth": 120
+  }
 }
