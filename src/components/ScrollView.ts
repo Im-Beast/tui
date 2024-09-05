@@ -58,6 +58,11 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
     let offset = -1;
     let maxY = 0;
     const updateScrollbar = () => {
+      // FIXME: Instead prevent doing bad calculations
+      if (!Number.isFinite(state.scrollOffset)) {
+        state.scrollOffset = 0;
+      }
+
       if (state.scrollOffset === offset) return;
       offset = state.scrollOffset;
 
