@@ -45,6 +45,7 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
     observableObject({
       scrollOffset: 0,
       scrollbarText: "",
+      // DOESNT HAVE BLOCK BY DEFAULT THATS WHY ITS FUCKY
       block: undefined!,
     })
   );
@@ -145,7 +146,9 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
       scrollbarStyle.create(getIntermediate(state).scrollbarText),
     ) as ScrollViewBlock;
 
-    const refreshChildren = () => {
+    state.associateBlock(state.block);
+
+    effect(() => {
       const [view] = state.block.children!;
 
       view.clearChildren();
@@ -156,8 +159,7 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
       }
 
       state.block.changed = true;
-    };
-    effect(refreshChildren);
+    });
 
     return state.block;
   }

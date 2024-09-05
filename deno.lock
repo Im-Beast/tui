@@ -1,48 +1,48 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "jsr:@tui/inputs": "jsr:@tui/inputs@0.0.1",
-      "jsr:@tui/nice@^0.5": "jsr:@tui/nice@0.5.5",
-      "jsr:@tui/signals@^0": "jsr:@tui/signals@0.0.5",
-      "jsr:@tui/strings": "jsr:@tui/strings@0.1.1",
-      "jsr:@tui/strings@^0": "jsr:@tui/strings@0.1.1",
-      "npm:@types/node": "npm:@types/node@18.16.19"
+  "version": "4",
+  "specifiers": {
+    "jsr:@beast/compat@~0.1.2": "0.1.2",
+    "jsr:@crayon/color-support@2.1.0": "2.1.0",
+    "jsr:@crayon/crayon@4.0.0-alpha.4": "4.0.0-alpha.4",
+    "jsr:@tui/inputs@0": "0.0.1",
+    "jsr:@tui/nice@0.5": "0.5.7",
+    "jsr:@tui/signals@0": "0.0.7",
+    "jsr:@tui/strings@0": "0.1.1",
+    "npm:@types/node@*": "18.16.19"
+  },
+  "jsr": {
+    "@beast/compat@0.1.2": {
+      "integrity": "f7837b100e3f4518e114f823570a1a1a2e49efaa7ed41de12eb5e079749f573f"
     },
-    "jsr": {
-      "@tui/inputs@0.0.1": {
-        "integrity": "4310f1d6de2d5b25b0ca5030b4849535bda3e5c20ff1bce8dbfa1b753a315efd"
-      },
-      "@tui/nice@0.5.5": {
-        "integrity": "712194de80b91a8f8729222e4c93054f2d74ea923d5243b683d09e24cec72c35",
-        "dependencies": [
-          "jsr:@tui/signals@^0",
-          "jsr:@tui/strings@^0"
-        ]
-      },
-      "@tui/signals@0.0.5": {
-        "integrity": "01ac7d04d16ab6d9a7dbdec179a4c00276663ad40f55c48d19674d08e8f5b3c2"
-      },
-      "@tui/strings@0.1.1": {
-        "integrity": "fe9fa432e216458f539046947515a56c65b60b70ebe927b005422d329c25ad08"
-      }
+    "@crayon/color-support@2.1.0": {
+      "integrity": "7901b177733e10526b78c2ca4f784550d6f7a38b992913f23ebcfc26ffee1398",
+      "dependencies": [
+        "jsr:@beast/compat"
+      ]
     },
-    "npm": {
-      "@types/node@18.16.19": {
-        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
-        "dependencies": {}
-      }
+    "@crayon/crayon@4.0.0-alpha.4": {
+      "integrity": "812afa0488d6b2a3691d23540493b2280e627ed0aa88ed8161625327b24467b2"
+    },
+    "@tui/inputs@0.0.1": {
+      "integrity": "4310f1d6de2d5b25b0ca5030b4849535bda3e5c20ff1bce8dbfa1b753a315efd"
+    },
+    "@tui/nice@0.5.7": {
+      "integrity": "ae0c3a6d548255ed0d739bc6cbdbfb81698916f1e0c3d59038c8457745588809",
+      "dependencies": [
+        "jsr:@tui/signals",
+        "jsr:@tui/strings"
+      ]
+    },
+    "@tui/signals@0.0.7": {
+      "integrity": "901b32854cd01d7569e1bbefc5c71e7ff83e6baa810c61157da86cea87f9d12e"
+    },
+    "@tui/strings@0.1.1": {
+      "integrity": "fe9fa432e216458f539046947515a56c65b60b70ebe927b005422d329c25ad08"
     }
   },
-  "remote": {},
-  "workspace": {
-    "dependencies": [
-      "jsr:@crayon/color-support@2.1.0",
-      "jsr:@crayon/crayon@4.0.0-alpha.4",
-      "jsr:@tui/inputs",
-      "jsr:@tui/nice@^0.5",
-      "jsr:@tui/signals@^0",
-      "jsr:@tui/strings"
-    ]
+  "npm": {
+    "@types/node@18.16.19": {
+      "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA=="
+    }
   }
 }

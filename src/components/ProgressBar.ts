@@ -44,6 +44,8 @@ export function createProgressBar(styles: Record<"text" | "filled", Style>): Pro
   ): ProgressBarBlock {
     const state = getState(label);
 
+    state.associateBlock(state.block);
+
     const progressSignal = computed(() => {
       const value = valueSignal.get();
       const max = maxSignal.get();

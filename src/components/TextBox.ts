@@ -125,6 +125,8 @@ export function createTextBox(styles: Record<TextBoxClass | "cursor", Style>): T
   return function TextBox(placeholder: string, options?: TextBoxOptions): TextBoxBlock {
     const state = getState(placeholder);
 
+    state.associateBlock(state.block);
+
     Object.assign(state.options, options);
 
     state.addEventListener("update", () => {

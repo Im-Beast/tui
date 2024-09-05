@@ -1,8 +1,17 @@
 import { decodeBuffer, type KeyPress, type MousePress } from "@tui/inputs";
-import { Block } from "@tui/nice";
+import type { Block } from "@tui/nice";
 
 import { AnsiDiffer } from "./diff.ts";
-import { BaseSignal, getValue, type MaybeSignal, observableObject, type Signal, signal } from "@tui/signals";
+import {
+  BaseSignal,
+  computed,
+  effect,
+  getValue,
+  type MaybeSignal,
+  observableObject,
+  type Signal,
+  signal,
+} from "@tui/signals";
 
 const ENABLE_MOUSE = "\x1b[?9h\x1b[?1005h\x1b[?1003h";
 const DISABLE_MOUSE = "\x1b[?9l\x1b[?1005lx1b[?1003l";
@@ -11,7 +20,7 @@ const SHOW_CURSOR = `\x1b[?25h`;
 const USE_SECONDARY_BUFFER = "\x1b[?1049h";
 const USE_PRIMARY_BUFFER = "\x1b[?1049l";
 
-export type TuiComponent = () => MaybeSignal<Block | PromiseLike<Block>>;
+export type TuiComponent = () => Block | PromiseLike<Block>;
 
 interface EventListeners {
   key: KeyListener[];
@@ -34,6 +43,8 @@ export type PreparedState<T> = T & {
   unfocus(): void;
   isFocused(): boolean;
 
+  associateBlock(block: MaybeSignal<Block>): void;
+
   alive: boolean;
   kill(): void;
 
@@ -52,7 +63,6 @@ interface TuiGlobalState {
 export class Tui {
   #differ = new AnsiDiffer();
 
-  #component?: TuiComponent;
   #componentBlock?: Block;
 
   #drawTimeout: number | undefined;
@@ -68,9 +78,6 @@ export class Tui {
   exit = false;
 
   constructor() {}
-
-  // TODO: trackStates(): TuiState[]
-  // { using states = trackStates(); somethingThatMakesStates(); console.log(states) }
 
   #globalState: TuiGlobalState = { focus: 0 };
   get globalState(): TuiGlobalState {
@@ -89,12 +96,6 @@ export class Tui {
     const prepare = (id: string, stateObj: T): PreparedState<T> => {
       const eventListeners: [TuiEvent, EventListener][] = [];
 
-      if ("block" in stateObj && stateObj.block instanceof Block) {
-        stateObj.block.addEventListener("unmount", () => {
-          prepared.kill();
-        });
-      }
-
       const prepared = Object.assign(stateObj, {
         focus: () => {
           this.#globalState.focus = stateObj;
@@ -106,7 +107,22 @@ export class Tui {
           return this.#globalState.focus === stateObj;
         },
 
+        associateBlock: (block: MaybeSignal<Block>) => {
+          if (block instanceof BaseSignal) {
+            computed([block], (block) => {
+              block.addEventListener("unmount", () => {
+                prepared.kill();
+              });
+            });
+          } else {
+            block.addEventListener("unmount", () => {
+              prepared.kill();
+            });
+          }
+        },
+
         alive: true,
+        blocked: false,
         kill: () => {
           prepared.alive = false;
 
@@ -117,15 +133,12 @@ export class Tui {
           const index = states[id]?.[1]?.findIndex((obj) => obj === stateObj);
           if (typeof index !== "number" || index === -1) return;
 
-          // states[id]![0].set(0);
           states[id]![1]!.splice(index, 1);
         },
 
-        addEventListener: (
-          event: TuiEvent,
-          listener: EventListener,
-        ) => {
+        addEventListener: (event: TuiEvent, listener: EventListener) => {
           eventListeners.push([event, listener]);
+
           this.addEventListener(
             event as "key" & "mouse" & "update",
             listener,
@@ -224,11 +237,6 @@ export class Tui {
     this.#differ.updateSize(this.#consoleSize);
   };
 
-  async updateComponent(): Promise<void> {
-    if (!this.#component) return;
-    this.#componentBlock = await getValue(this.#component());
-  }
-
   async render(component: TuiComponent): Promise<void> {
     this.addSanitizer(() => {
       Deno.removeSignalListener("SIGWINCH", this.#move);
@@ -238,9 +246,7 @@ export class Tui {
 
     Deno.addSignalListener("SIGWINCH", this.#move);
 
-    this.#component = component;
-
-    await this.updateComponent();
+    this.#componentBlock = await component();
 
     await Promise.all([
       this.handleInputs(),

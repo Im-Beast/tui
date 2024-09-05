@@ -36,6 +36,8 @@ export function createSpinner(styles: Record<"text" | "spinner", Style>): Spinne
   return function Spinner(label: string): SpinnerBlock {
     const state = getState(label);
 
+    state.associateBlock(state.block);
+
     state.addEventListener("update", () => {
       state.currentChar.modify((char) => (char += 0.2));
     });

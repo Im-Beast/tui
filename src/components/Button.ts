@@ -32,8 +32,9 @@ export function createButton(styles: Record<ButtonClass, Style>): Button {
   }));
 
   return function Button(text: string, options?: ButtonOptions): ButtonBlock {
-    // TODO: make state a signal that just gets updated?
     const state = getState(text);
+
+    state.associateBlock(state.block);
 
     state.addEventListener("update", () => {
       if (state.isFocused()) {
