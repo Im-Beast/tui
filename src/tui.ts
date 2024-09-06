@@ -52,9 +52,9 @@ interface TuiGlobalState {
 }
 
 export class Tui {
-  #differ = new AnsiDiffer();
-
   #componentBlock?: Block;
+
+  #differ = new AnsiDiffer();
 
   #drawTimeout: number | undefined;
 
@@ -76,13 +76,7 @@ export class Tui {
   }
 
   createLocalStates<T extends object>(base: (id: string) => T): (id: string) => PreparedState<T> {
-    const states: { [id: string]: [Signal<number>, PreparedState<T>[]] } = {};
-
-    this.addEventListener("update", () => {
-      for (const [cursor] of Object.values(states)) {
-        cursor.set(0);
-      }
-    });
+    const states: { [id: string]: PreparedState<T>[] } = {};
 
     const prepare = (id: string, stateObj: T): PreparedState<T> => {
       const eventListeners: [TuiEvent, EventListener][] = [];
@@ -121,10 +115,10 @@ export class Tui {
             this.removeEventListener(event, listener);
           }
 
-          const index = states[id]?.[1]?.findIndex((obj) => obj === stateObj);
+          const index = states[id]?.findIndex((obj) => obj === stateObj);
           if (typeof index !== "number" || index === -1) return;
 
-          states[id]![1]!.splice(index, 1);
+          states[id]!.splice(index, 1);
         },
 
         addEventListener: (event: TuiEvent, listener: EventListener) => {
@@ -141,23 +135,11 @@ export class Tui {
     };
 
     return function getState(id: string): PreparedState<T> {
-      const [cursor, localStates] = states[id] ??= [signal(0), []];
+      const localStates = states[id] ??= [];
 
-      const activeSignal = BaseSignal.activeSignal;
-      BaseSignal.activeSignal = undefined;
-
-      const localState = localStates[cursor.get()];
-      cursor.modify((cursor) => ++cursor);
-
-      BaseSignal.activeSignal = activeSignal;
-
-      if (!localState) {
-        const stateObj = prepare(id, base(id));
-        localStates.push(stateObj);
-        return stateObj;
-      }
-
-      return localState;
+      const stateObj = prepare(id, base(id));
+      localStates.push(stateObj);
+      return stateObj;
     };
   }
 
