@@ -248,10 +248,17 @@ export class Tui {
   }
 
   async handleInputs(): Promise<void> {
-    this.addSanitizer(() => {
-      // FIXME: setraw
-      // Deno.stdin.setRaw(false);
-      console.log(SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER);
+    this.addSanitizer(async () => {
+      await Deno.stdout.write(
+        textEncoder.encode(
+          SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER,
+        ),
+      );
+
+      // setRaw sometimes crashes with bad resource ID if it fires at wrong time
+      try {
+        Deno.stdin.setRaw(false);
+      } catch { /**/ }
     });
 
     await Deno.stdout.write(

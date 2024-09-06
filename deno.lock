@@ -6,9 +6,8 @@
     "jsr:@crayon/crayon@4.0.0-alpha.4": "4.0.0-alpha.4",
     "jsr:@tui/inputs@0": "0.0.1",
     "jsr:@tui/nice@0.5": "0.5.7",
-    "jsr:@tui/signals@0": "0.0.7",
-    "jsr:@tui/strings@0": "0.1.1",
-    "npm:@types/node@*": "18.16.19"
+    "jsr:@tui/signals@0": "0.0.8",
+    "jsr:@tui/strings@0": "0.1.1"
   },
   "jsr": {
     "@beast/compat@0.1.2": {
@@ -33,16 +32,21 @@
         "jsr:@tui/strings"
       ]
     },
-    "@tui/signals@0.0.7": {
-      "integrity": "901b32854cd01d7569e1bbefc5c71e7ff83e6baa810c61157da86cea87f9d12e"
+    "@tui/signals@0.0.8": {
+      "integrity": "296f28c7da6921567c8b5310bcceb9591c87a072ad020367afcd3a2a6665796f"
     },
     "@tui/strings@0.1.1": {
       "integrity": "fe9fa432e216458f539046947515a56c65b60b70ebe927b005422d329c25ad08"
     }
   },
-  "npm": {
-    "@types/node@18.16.19": {
-      "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA=="
-    }
+  "workspace": {
+    "dependencies": [
+      "jsr:@crayon/color-support@2.1.0",
+      "jsr:@crayon/crayon@4.0.0-alpha.4",
+      "jsr:@tui/inputs@0",
+      "jsr:@tui/nice@0.5",
+      "jsr:@tui/signals@0",
+      "jsr:@tui/strings@0"
+    ]
   }
 }
