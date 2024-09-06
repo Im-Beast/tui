@@ -18,9 +18,9 @@ export function Suspense(
 ): Signal<Block> {
   const state = getState(id);
 
+  state.block.set(fallback);
   state.associateBlock(state.block);
 
-  state.block.set(fallback);
   if (typeof component === "function") {
     component().then((block) => state.block.set(block));
   } else {
