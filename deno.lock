@@ -5,7 +5,7 @@
     "jsr:@crayon/color-support@2.1.0": "2.1.0",
     "jsr:@crayon/crayon@4.0.0-alpha.4": "4.0.0-alpha.4",
     "jsr:@tui/inputs@0": "0.0.1",
-    "jsr:@tui/nice@0.5": "0.5.7",
+    "jsr:@tui/nice@0.5": "0.5.11",
     "jsr:@tui/signals@0": "0.0.8",
     "jsr:@tui/strings@0": "0.1.1"
   },
@@ -25,8 +25,8 @@
     "@tui/inputs@0.0.1": {
       "integrity": "4310f1d6de2d5b25b0ca5030b4849535bda3e5c20ff1bce8dbfa1b753a315efd"
     },
-    "@tui/nice@0.5.7": {
-      "integrity": "ae0c3a6d548255ed0d739bc6cbdbfb81698916f1e0c3d59038c8457745588809",
+    "@tui/nice@0.5.11": {
+      "integrity": "e5f85d3d42b7641b2978d3fd821e3e2750112be323277219b2ad0159d64c525a",
       "dependencies": [
         "jsr:@tui/signals",
         "jsr:@tui/strings"
