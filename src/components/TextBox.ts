@@ -1,5 +1,5 @@
 import { crayon } from "@crayon/crayon";
-import { computed, effect, type ObservableObject, observableObject, type Signal, signal } from "@tui/signals";
+import { computed, getIntermediate, type ObservableObject, observableObject, type Signal, signal } from "@tui/signals";
 import { OverlayBlock, Style, type StyleBlock } from "@tui/nice";
 import type { KeyPress } from "@tui/inputs";
 
@@ -57,23 +57,27 @@ export function createTextBox(styles: Record<TextBoxClass | "cursor", Style>): T
     const textBlockText = signal("");
     const textBoxBlock = styles.base.create(textBlockText);
 
-    effect(() => {
-      const linesValue = lines.get();
-      let linesCopy = Array.from(linesValue);
+    computed([lines, getIntermediate(cursor).x, getIntermediate(cursor).y], (lines, cursorX, cursorY) => {
+      if (lines.length === 1 && !lines[0]) {
+        textBlockText.set(placeholder);
+        return;
+      }
+
+      let linesCopy = Array.from(lines);
 
       const contentWidth = textBoxBlock.computedWidth -
         cursorOffset.startX - cursorOffset.endX;
       const contentHeight = textBoxBlock.computedHeight -
         cursorOffset.startY - cursorOffset.endY;
 
-      if (cursor.y >= contentHeight) {
-        linesCopy.splice(0, cursor.y - 1);
-        cursorOffset.additionalY = cursor.y - 1;
+      if (cursorY >= contentHeight) {
+        linesCopy.splice(0, cursorY - 1);
+        cursorOffset.additionalY = cursorY - 1;
       } else {
         cursorOffset.additionalY = 0;
       }
 
-      if ((cursor.x - 1) >= contentWidth) {
+      if ((cursorX - 1) >= contentWidth) {
         linesCopy = linesCopy
           .map((line) => cropStart(line, contentWidth - 1));
       }
