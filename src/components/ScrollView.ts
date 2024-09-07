@@ -45,7 +45,6 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
     observableObject({
       scrollOffset: 0,
       scrollbarText: "",
-      // DOESNT HAVE BLOCK BY DEFAULT THATS WHY ITS FUCKY
       block: undefined!,
     })
   );
@@ -71,8 +70,6 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
 
       if (!view?.children) return;
 
-      state.scrollbarText = "";
-
       let childrenHeight = 0;
       let maxChildHeight = 0;
 
@@ -95,6 +92,8 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
       );
 
       if (maxY > 0) {
+        state.scrollbarText = "";
+
         for (let i = 0; i < view.computedHeight; ++i) {
           state.scrollbarText += i === scrollPosition ? "┃" : " ";
           if (i < view.computedHeight - 1) state.scrollbarText += "\n";
