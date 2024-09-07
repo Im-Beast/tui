@@ -2,7 +2,7 @@ import { decodeBuffer, type KeyPress, type MousePress } from "@tui/inputs";
 import type { Block } from "@tui/nice";
 
 import { AnsiDiffer } from "./diff.ts";
-import { BaseSignal, computed, type MaybeSignal, observableObject, type Signal, signal } from "@tui/signals";
+import { BaseSignal, computed, type MaybeSignal, observableObject } from "@tui/signals";
 
 const ENABLE_MOUSE = "\x1b[?9h\x1b[?1005h\x1b[?1003h";
 const DISABLE_MOUSE = "\x1b[?9l\x1b[?1005l\x1b[?1003l";
