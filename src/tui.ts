@@ -149,7 +149,7 @@ export class Tui {
 
   async close() {
     this.exit = true;
-    for (const sanitizer of this.sanitizers.splice(0)) {
+    for (const sanitizer of this.sanitizers) {
       await sanitizer();
     }
   }
@@ -231,19 +231,17 @@ export class Tui {
 
   async handleInputs(): Promise<void> {
     this.addSanitizer(async () => {
-      await Deno.stdout.write(
-        textEncoder.encode(
-          SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER,
-        ),
-      );
-
       // setRaw sometimes crashes with bad resource ID if it fires at wrong time
       try {
         Deno.stdin.setRaw(false);
       } catch { /**/ }
+
+      await writer.write(
+        textEncoder.encode(SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER),
+      );
     });
 
-    await Deno.stdout.write(
+    await writer.write(
       textEncoder.encode(
         USE_SECONDARY_BUFFER + HIDE_CURSOR + ENABLE_MOUSE + "\x1b[1;1H",
       ),
