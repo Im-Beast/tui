@@ -53,9 +53,7 @@ interface TuiGlobalState {
 
 export class Tui {
   #componentBlock?: Block;
-
   #differ = new AnsiDiffer();
-
   #drawTimeout: number | undefined;
 
   eventListeners: EventListeners = {
@@ -231,14 +229,15 @@ export class Tui {
 
   async handleInputs(): Promise<void> {
     this.addSanitizer(async () => {
+      await writer.write(
+        textEncoder.encode(SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER),
+      );
+      writer.releaseLock();
+
       // setRaw sometimes crashes with bad resource ID if it fires at wrong time
       try {
         Deno.stdin.setRaw(false);
       } catch { /**/ }
-
-      await writer.write(
-        textEncoder.encode(SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER),
-      );
     });
 
     await writer.write(
