@@ -52,7 +52,6 @@ export type PreparedState<T> = T & {
 };
 
 const textEncoder = new TextEncoder();
-const writer = Deno.stdout.writable.getWriter();
 
 interface TuiGlobalState {
   stateObjects: PreparedState<unknown>[];
@@ -63,6 +62,10 @@ export class Tui {
   #componentBlock?: Block;
   #differ = new AnsiDiffer();
   #drawTimeout: number | undefined;
+
+  writer = Deno.stdout.writable.getWriter();
+  exit = false;
+  sanitizers: Sanitizer[] = [];
 
   readonly globalState: TuiGlobalState = {
     stateObjects: [],
@@ -75,10 +78,6 @@ export class Tui {
     update: [],
     resize: [],
   };
-
-  sanitizers: Sanitizer[] = [];
-
-  exit = false;
 
   constructor() {}
 
@@ -215,7 +214,7 @@ export class Tui {
 
     // TODO: make diffStrings produce better output
     const diff = this.#differ.diff(buffer);
-    await writer.write(textEncoder.encode("\x1b[1;1H" + diff));
+    await this.writer.write(textEncoder.encode("\x1b[1;1H" + diff));
 
     if (!this.exit) {
       this.#drawTimeout = setTimeout(this.#draw, 16);
@@ -261,10 +260,10 @@ export class Tui {
 
   async handleInputs(): Promise<void> {
     this.addSanitizer(async () => {
-      await writer.write(
+      await this.writer.write(
         textEncoder.encode(SHOW_CURSOR + DISABLE_MOUSE + USE_PRIMARY_BUFFER),
       );
-      writer.releaseLock();
+      this.writer.releaseLock();
 
       // setRaw sometimes crashes with bad resource ID if it fires at wrong time
       try {
@@ -272,7 +271,7 @@ export class Tui {
       } catch { /**/ }
     });
 
-    await writer.write(
+    await this.writer.write(
       textEncoder.encode(
         USE_SECONDARY_BUFFER + HIDE_CURSOR + ENABLE_MOUSE + "\x1b[1;1H",
       ),
