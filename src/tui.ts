@@ -2,7 +2,7 @@ import { decodeBuffer, type KeyPress, type MousePress } from "@tui/inputs";
 import type { Block } from "@tui/nice";
 
 import { AnsiDiffer } from "./diff.ts";
-import { BaseSignal, computed, type MaybeSignal, observableObject } from "@tui/signals";
+import { BaseSignal, computed, getValue, type MaybeSignal, observableObject } from "@tui/signals";
 
 const ENABLE_MOUSE = "\x1b[?9h\x1b[?1005h\x1b[?1003h";
 const DISABLE_MOUSE = "\x1b[?9l\x1b[?1005l\x1b[?1003l";
@@ -30,15 +30,19 @@ export type TuiEvent = "key" | "mouse" | "update";
 export type Sanitizer = () => void | PromiseLike<void>;
 
 export type PreparedState<T> = T & {
+  id: string;
+
   focus(): void;
   unfocus(): void;
   isFocused(): boolean;
 
+  associatedBlocks: MaybeSignal<Block>[];
   associateBlock(block: MaybeSignal<Block>): void;
 
   alive: boolean;
   kill(): void;
 
+  eventListeners: [TuiEvent, EventListener][];
   addEventListener(event: "key", listener: KeyListener): void;
   addEventListener(event: "mouse", listener: MouseListener): void;
   addEventListener(event: "update", listener: UpdateListener): void;
@@ -48,13 +52,19 @@ const textEncoder = new TextEncoder();
 const writer = Deno.stdout.writable.getWriter();
 
 interface TuiGlobalState {
-  focus: unknown;
+  stateObjects: PreparedState<unknown>[];
+  focusIndex: number;
 }
 
 export class Tui {
   #componentBlock?: Block;
   #differ = new AnsiDiffer();
   #drawTimeout: number | undefined;
+
+  readonly globalState: TuiGlobalState = {
+    stateObjects: [],
+    focusIndex: 0,
+  };
 
   eventListeners: EventListeners = {
     key: [],
@@ -68,39 +78,36 @@ export class Tui {
 
   constructor() {}
 
-  #globalState: TuiGlobalState = { focus: 0 };
-  get globalState(): TuiGlobalState {
-    return this.#globalState;
-  }
-
   createLocalStates<T extends object>(base: (id: string) => T): (id: string) => PreparedState<T> {
     const states: { [id: string]: PreparedState<T>[] } = {};
 
     const prepare = (id: string, stateObj: T): PreparedState<T> => {
-      const eventListeners: [TuiEvent, EventListener][] = [];
+      const { globalState } = this;
 
       const prepared = Object.assign(stateObj, {
+        id,
+
         focus: () => {
-          this.#globalState.focus = stateObj;
+          globalState.focusIndex = globalState.stateObjects.indexOf(prepared);
         },
         unfocus: () => {
-          this.#globalState.focus = -1;
+          globalState.focusIndex = -1;
         },
         isFocused: () => {
-          return this.#globalState.focus === stateObj;
+          const { focusIndex, stateObjects } = this.globalState;
+          const focusedObj = stateObjects[focusIndex];
+          return focusedObj === stateObj;
         },
 
+        associatedBlocks: [] as MaybeSignal<Block>[],
         associateBlock: (block: MaybeSignal<Block>) => {
+          prepared.associatedBlocks.push(block);
           if (block instanceof BaseSignal) {
             computed([block], (block) => {
-              block.addEventListener("unmount", () => {
-                prepared.kill();
-              });
+              block.addEventListener("unmount", () => prepared.kill());
             });
           } else {
-            block.addEventListener("unmount", () => {
-              prepared.kill();
-            });
+            block.addEventListener("unmount", () => prepared.kill());
           }
         },
 
@@ -109,18 +116,31 @@ export class Tui {
         kill: () => {
           prepared.alive = false;
 
-          for (const [event, listener] of eventListeners.splice(0)) {
+          for (const block of prepared.associatedBlocks.splice(0)) {
+            getValue(block)?.unmount();
+          }
+
+          for (const [event, listener] of prepared.eventListeners.splice(0)) {
             this.removeEventListener(event, listener);
           }
 
-          const index = states[id]?.findIndex((obj) => obj === stateObj);
-          if (typeof index !== "number" || index === -1) return;
+          const globalIndex = globalState.stateObjects.indexOf(prepared);
+          if (globalIndex !== -1) {
+            if (globalState.focusIndex === globalIndex) {
+              globalState.focusIndex -= 1;
+            }
+            globalState.stateObjects.splice(globalIndex, 1);
+          }
 
-          states[id]!.splice(index, 1);
+          const localIndex = states[id]?.findIndex((obj) => obj === stateObj);
+          if (typeof localIndex !== "number" || localIndex === -1) return;
+
+          states[id]!.splice(localIndex, 1);
         },
 
+        eventListeners: [] as [TuiEvent, EventListener][],
         addEventListener: (event: TuiEvent, listener: EventListener) => {
-          eventListeners.push([event, listener]);
+          prepared.eventListeners.push([event, listener]);
 
           this.addEventListener(
             event as "key" & "mouse" & "update",
@@ -128,6 +148,8 @@ export class Tui {
           );
         },
       });
+
+      this.globalState.stateObjects.push(prepared);
 
       return prepared;
     };
@@ -256,14 +278,29 @@ export class Tui {
 
       for (const keyPress of decoded) {
         if (keyPress.key === "tab") {
-          // FIXME: tab controls
-          // if (keyPress.shift) {
-          //     let lastId = this.#globalState.focus - 1;
-          //     if (lastId < 0) lastId = this.#states.length + lastId;
-          //     this.#globalState.focus = lastId;
-          // } else {
-          //     this.#globalState.focus = (this.#globalState.focus + 1) % this.#states.length;
-          // }
+          let { focusIndex, stateObjects } = this.globalState;
+
+          let object: Block | undefined;
+          // Temporary workaround
+          // Some objects which don't have root still persist
+          // But they are not being computed
+          // This ensures only visible item can be focused
+          while (!object?.computedWidth || !object?.visible) {
+            if (keyPress.shift) {
+              focusIndex = focusIndex - 1;
+              if (focusIndex < 0) {
+                focusIndex = stateObjects.length + focusIndex;
+              }
+            } else {
+              focusIndex = (focusIndex + 1) % stateObjects.length;
+            }
+
+            const stateObj = stateObjects[focusIndex];
+            if (!stateObj) break;
+            object = getValue(stateObj?.associatedBlocks?.[0]);
+          }
+
+          this.globalState.focusIndex = focusIndex;
           continue;
         }
 
