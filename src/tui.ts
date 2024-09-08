@@ -1,7 +1,7 @@
 import { decodeBuffer, type KeyPress, type MousePress } from "@tui/inputs";
 import type { Block } from "@tui/nice";
 
-import { AnsiDiffer, ConsoleSize } from "./diff.ts";
+import { AnsiDiffer, type ConsoleSize } from "./diff.ts";
 import { BaseSignal, computed, getValue, type MaybeSignal, observableObject } from "@tui/signals";
 
 const ENABLE_MOUSE = "\x1b[?9h\x1b[?1005h\x1b[?1003h";
@@ -63,7 +63,7 @@ export class Tui {
   #differ = new AnsiDiffer();
   #drawTimeout: number | undefined;
 
-  writer = Deno.stdout.writable.getWriter();
+  writer: WritableStreamDefaultWriter<Uint8Array> = Deno.stdout.writable.getWriter();
   exit = false;
   sanitizers: Sanitizer[] = [];
 
