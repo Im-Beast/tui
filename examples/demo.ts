@@ -1,6 +1,6 @@
 import { VerticalBlock } from "@tui/nice/layout";
 import { tui } from "../src/tui.ts";
-import { Button, Spinner, Suspense, TextBox } from "../src/components/mod.ts";
+import { Button, ScrollView, Spinner, Suspense, TextBox } from "../src/components/mod.ts";
 import { HorizontalBlock } from "@tui/nice/layout/horizontal";
 
 tui.render(() =>
@@ -10,11 +10,20 @@ tui.render(() =>
     Button("abc"),
     Button("xyz"),
     // TextBoxes
-    // FIXME: Placeholders
     TextBox("Textbox"),
     TextBox("Multiline textbox", {
       multiline: true,
     }),
+    // ScrollView
+    ScrollView(
+      { id: "scroll-view", height: "100%", width: 30 },
+      Button("abc"),
+      Button("xyz"),
+      Button("abc"),
+      Button("xyz"),
+      Button("abc"),
+      Button("xyz"),
+    ),
     // Suspense
     new HorizontalBlock(
       { gap: 4 },

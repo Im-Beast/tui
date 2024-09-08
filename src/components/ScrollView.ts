@@ -63,7 +63,7 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
         state.scrollOffset = 0;
       }
 
-      if (state.scrollOffset === offset) return;
+      if ((state.scrollOffset === offset && state.scrollbarText)) return;
       offset = state.scrollOffset;
 
       const [view] = state.block.children!;
@@ -102,6 +102,10 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
     };
 
     state.addEventListener("update", updateScrollbar);
+
+    state.addEventListener("resize", () => {
+      state.scrollbarText = "";
+    });
 
     state.addEventListener("mouse", (mousePress) => {
       if (!intersects(mousePress.x, mousePress.y, state.block.boundingRectangle())) {
