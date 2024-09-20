@@ -4,27 +4,19 @@ import {
   type Block,
   calc,
   HorizontalBlock,
+  type HorizontalBlockOptions,
   Style,
   type StyleBlock,
   VerticalBlock,
-  type VerticalBlockOptions,
 } from "@tui/nice";
-import {
-  computed,
-  effect,
-  getIntermediate,
-  getValue,
-  type MaybeSignal,
-  type ObservableObject,
-  observableObject,
-} from "@tui/signals";
+import { type BaseSignal, computed, type MaybeSignal, type Signal, signal } from "@tui/signals";
 
 import { tui } from "../tui.ts";
 
-import { intersects } from "./utils.ts";
+import { intersects, stripe } from "./utils.ts";
 import { colors } from "./colors.ts";
 
-export interface ScrollViewOptions extends VerticalBlockOptions {
+export interface ScrollViewOptions extends HorizontalBlockOptions {
   id: string;
 }
 
@@ -32,22 +24,52 @@ export type ScrollViewBlock = HorizontalBlock & {
   children: [view: VerticalBlock, scrollbar: StyleBlock];
 };
 
-export type ScrollViewState = ObservableObject<{
-  scrollbarText: string;
-  scrollOffset: number;
+export interface ScrollViewState {
   block: ScrollViewBlock;
-}>;
+  blockHeight: Signal<number>;
+  childrenHeight: Signal<number>;
+  offset: Signal<number>;
+  scrollbar: BaseSignal<string>;
+}
 
 type ScrollView = (options: ScrollViewOptions, ...childrenSignals: MaybeSignal<Block>[]) => ScrollViewBlock;
 
 export function createScrollView(scrollbarStyle: Style): ScrollView {
-  const getState = tui.createLocalStates<ScrollViewState>(() =>
-    observableObject({
-      scrollOffset: 0,
-      scrollbarText: "",
+  const getState = tui.createLocalStates<ScrollViewState>(() => {
+    const offset = signal(0);
+    const blockHeight = signal(0);
+    const childrenHeight = signal(0);
+
+    const scrollbar = computed([offset, blockHeight, childrenHeight], (offset, blockHeight, childrenHeight) => {
+      if (blockHeight === 0 || childrenHeight === 0) {
+        return "";
+      }
+
+      const heightDiff = childrenHeight - blockHeight;
+      if (heightDiff <= 0) {
+        return "";
+      }
+
+      const thumbHeight = Math.floor(blockHeight * (blockHeight / childrenHeight));
+      const remainingTrackHeight = blockHeight - thumbHeight;
+      const bottomTrackHeight = remainingTrackHeight - Math.ceil(offset * (blockHeight / childrenHeight));
+      const topTrackHeight = remainingTrackHeight - bottomTrackHeight;
+
+      const topTrack = stripe(scrollbarStyle.string(" "), topTrackHeight, "vertical");
+      const thumb = stripe(scrollbarStyle.string("┃"), thumbHeight, "vertical");
+      const bottomTrack = stripe(scrollbarStyle.string(" "), bottomTrackHeight, "vertical");
+
+      return `${topTrack ? topTrack + "\n" : ""}${thumb}\n${bottomTrack}`;
+    });
+
+    return {
       block: undefined!,
-    })
-  );
+      blockHeight,
+      childrenHeight,
+      offset,
+      scrollbar,
+    };
+  });
 
   function ScrollView(
     options: ScrollViewOptions,
@@ -55,114 +77,58 @@ export function createScrollView(scrollbarStyle: Style): ScrollView {
   ): ScrollViewBlock {
     const state = getState(options.id);
 
-    let offset = -1;
-    let maxY = 0;
-    const updateScrollbar = () => {
-      // FIXME: Instead prevent doing bad calculations
-      if (!Number.isFinite(state.scrollOffset)) {
-        state.scrollOffset = 0;
-      }
-
-      if ((state.scrollOffset === offset && state.scrollbarText)) return;
-      offset = state.scrollOffset;
-
-      const [view] = state.block.children!;
-
-      if (!view?.children) return;
-
-      let childrenHeight = 0;
-      let maxChildHeight = 0;
-
-      for (const childSignal of view.children) {
-        const child = getValue(childSignal);
-        childrenHeight += child.computedHeight + (childrenHeight && view.computedGap);
-        maxChildHeight = Math.max(maxChildHeight, child.computedHeight);
-      }
-
-      maxY = childrenHeight - view.computedHeight;
-      // We offset it based on the amount of children that can fit into the view
-      // so we don't leave any free space after the content in the view
-      maxY -= view.computedGap *
-        (view.children.length - (Math.round(view.computedHeight / maxChildHeight) - 1));
-      state.scrollOffset = Math.max(0, Math.min(state.scrollOffset, maxY));
-
-      const scrollPosition = Math.min(
-        Math.floor(state.scrollOffset / maxY * view.computedHeight),
-        view.computedHeight - 1,
-      );
-
-      if (maxY > 0) {
-        state.scrollbarText = "";
-
-        for (let i = 0; i < view.computedHeight; ++i) {
-          state.scrollbarText += i === scrollPosition ? "┃" : " ";
-          if (i < view.computedHeight - 1) state.scrollbarText += "\n";
-        }
-      }
-    };
-
-    state.addEventListener("update", updateScrollbar);
-
-    state.addEventListener("resize", () => {
-      state.scrollbarText = "";
-    });
-
-    state.addEventListener("mouse", (mousePress) => {
-      if (!intersects(mousePress.x, mousePress.y, state.block.boundingRectangle())) {
-        return;
-      }
-
-      if ("scroll" in mousePress) {
-        state.scrollOffset += mousePress.scroll! * 2 - 1;
-      }
-
-      updateScrollbar();
-    });
-
-    state.addEventListener("key", (keyPress) => {
-      if (keyPress.key === "up") {
-        state.scrollOffset -= 1;
-      } else if (keyPress.key === "down") {
-        state.scrollOffset += 1;
-      }
-
-      state.scrollOffset = Math.max(0, Math.min(state.scrollOffset, maxY));
-
-      updateScrollbar();
-    });
-
     state.block ??= new HorizontalBlock(
-      { id: options.id, width: "100%", height: "100%" },
-      new VerticalBlock({
-        ...options,
-        width: computed(() =>
-          state.scrollbarText
-            ? calc(`${getValue(options.width)} - ${getValue(scrollbarStyle.width)}`)
-            : (getValue(options.width) ?? "auto")
-        ),
-        y: computed(() => {
-          const num = -state.scrollOffset;
-          if (Number.isFinite(num)) return num;
-          return 0;
-        }),
-      }),
-      scrollbarStyle.create(getIntermediate(state).scrollbarText),
+      {
+        id: options.id,
+        width: options.width,
+        height: options.height,
+        string: options.string,
+      },
+      new VerticalBlock(
+        {
+          width: computed([state.scrollbar], (scrollbar) => scrollbar ? calc("100% - 2") : "100%"),
+          height: "100%",
+          y: computed([state.offset], (offset) => -offset),
+          x: options.x,
+          gap: options.gap,
+          string: options.string,
+        },
+        ...childrenSignals,
+      ),
+      scrollbarStyle.create(state.scrollbar),
     ) as ScrollViewBlock;
 
     state.associateBlock(state.block);
 
-    effect(() => {
-      const [view] = state.block.children!;
+    state.addEventListener("mouse", (mouseEvent) => {
+      if (!("scroll" in mouseEvent)) return;
+      if (!intersects(mouseEvent.x, mouseEvent.y, state.block.boundingRectangle())) return;
 
-      view.clearChildren();
-
-      for (const child of childrenSignals) {
-        const childValue = getValue(child);
-        view.addChild(childValue);
-      }
-
-      state.block.changed = true;
+      const scrollOffset = (mouseEvent.scroll! * 2) - 1;
+      const heightDiff = state.childrenHeight.get() - state.blockHeight.get();
+      state.offset.modify((v) => Math.max(0, Math.min(heightDiff, v + scrollOffset)));
     });
+
+    const updateSizes = () => {
+      const blockHeight = state.block.computedHeight;
+      state.blockHeight.set(blockHeight);
+
+      const [view] = state.block.children!;
+      let childrenHeight = 0;
+      for (const children of view.children) {
+        childrenHeight += children.computedHeight;
+        if (childrenHeight < blockHeight) {
+          childrenHeight += view.computedGap;
+        }
+      }
+      state.childrenHeight.set(childrenHeight);
+
+      // Adjust state offset after resize so the same items are visible
+      const heightDiff = childrenHeight - blockHeight;
+      state.offset.modify((v) => Math.max(0, Math.min(heightDiff + 1, v)));
+    };
+
+    state.block.addEventListener("resize", updateSizes);
 
     return state.block;
   }
