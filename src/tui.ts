@@ -1,8 +1,8 @@
 import { decodeBuffer, type KeyPress, type MousePress } from "@tui/inputs";
 import type { Block } from "@tui/nice";
 
-import { AnsiDiffer, type ConsoleSize } from "./diff.ts";
-import { BaseSignal, computed, getValue, type MaybeSignal, observableObject } from "@tui/signals";
+import { AnsiDiffer } from "./diff.ts";
+import { BaseSignal, computed, getValue, type MaybeSignal } from "@tui/signals";
 
 const ENABLE_MOUSE = "\x1b[?9h\x1b[?1005h\x1b[?1003h";
 const DISABLE_MOUSE = "\x1b[?9l\x1b[?1005l\x1b[?1003l";
@@ -17,17 +17,15 @@ interface EventListeners {
   key: KeyListener[];
   mouse: MouseListener[];
   update: UpdateListener[];
-  resize: ResizeListener[];
 }
 
 export type UpdateListener = () => void;
-export type ResizeListener = (size: ConsoleSize) => void;
 export type MouseListener = (mousePress: MousePress) => void;
 export type KeyListener = (keyPress: KeyPress) => void;
 
-export type EventListener = UpdateListener | MouseListener | KeyListener | ResizeListener;
+export type EventListener = UpdateListener | MouseListener | KeyListener;
 
-export type TuiEvent = "key" | "mouse" | "update" | "resize";
+export type TuiEvent = "key" | "mouse" | "update";
 
 export type Sanitizer = () => void | PromiseLike<void>;
 
@@ -48,7 +46,6 @@ export type PreparedState<T> = T & {
   addEventListener(event: "key", listener: KeyListener): void;
   addEventListener(event: "mouse", listener: MouseListener): void;
   addEventListener(event: "update", listener: UpdateListener): void;
-  addEventListener(event: "resize", listener: ResizeListener): void;
 };
 
 const textEncoder = new TextEncoder();
@@ -183,12 +180,10 @@ export class Tui {
 
   addEventListener(event: "key", listener: KeyListener): void;
   addEventListener(event: "mouse", listener: MouseListener): void;
-  addEventListener(event: "resize", listener: ResizeListener): void;
   addEventListener(event: "update", listener: UpdateListener): void;
   addEventListener(event: TuiEvent, listener: EventListener): void {
     this.eventListeners[event].push(
       listener as
-        & ResizeListener
         & KeyListener
         & MouseListener
         & UpdateListener,
@@ -223,26 +218,14 @@ export class Tui {
     await this.writer.write(textEncoder.encode("\x1b[1;1H" + diff));
 
     if (!this.exit) {
+      clearTimeout(this.#drawTimeout);
       this.#drawTimeout = setTimeout(this.#draw, 16);
     }
   };
 
-  #consoleSize = observableObject(Deno.consoleSize());
   #move = () => {
-    const consoleSize = this.#consoleSize;
-
-    // Debounce render
-    clearTimeout(this.#drawTimeout);
-    this.#drawTimeout = setTimeout(this.#draw, 8);
-    const { columns, rows } = Deno.consoleSize();
-    consoleSize.columns = columns;
-    consoleSize.rows = rows;
-    // TODO: use observable in differ from the start?
+    const consoleSize = Deno.consoleSize();
     this.#differ.updateSize(consoleSize);
-
-    for (const listener of this.eventListeners.resize) {
-      listener(consoleSize);
-    }
   };
 
   async render(component: TuiComponent): Promise<void> {
