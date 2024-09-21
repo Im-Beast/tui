@@ -1,6 +1,6 @@
 {
   "name": "@tui/tui",
-  "version": "3.0.0-dev.7",
+  "version": "3.0.0-dev.8",
   "license": "MIT",
   "exports": {
     ".": "./src/tui.ts",
