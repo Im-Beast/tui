@@ -1,3 +1,4 @@
+export * from "./BlockButton.ts";
 export * from "./Button.ts";
 export * from "./ProgressBar.ts";
 export * from "./ScrollView.ts";
