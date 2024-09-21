@@ -3,7 +3,6 @@ import { Style, type StyleBlock } from "@tui/nice";
 import type { KeyPress } from "@tui/inputs";
 
 import { tui } from "../tui.ts";
-
 import { intersects } from "./utils.ts";
 import { colors } from "./colors.ts";
 
