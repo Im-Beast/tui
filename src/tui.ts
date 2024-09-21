@@ -106,8 +106,14 @@ export class Tui {
         associateBlock: (block: MaybeSignal<Block>) => {
           prepared.associatedBlocks.push(block);
           if (block instanceof BaseSignal) {
+            let previousBlock: Block | undefined;
+            const killCallback = () => prepared.kill();
             computed([block], (block) => {
-              block.addEventListener("unmount", () => prepared.kill());
+              if (previousBlock) {
+                previousBlock.removeEventListener("unmount", killCallback);
+              }
+              block.addEventListener("unmount", killCallback);
+              previousBlock = block;
             });
           } else {
             block.addEventListener("unmount", () => prepared.kill());
