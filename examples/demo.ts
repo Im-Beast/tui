@@ -9,7 +9,7 @@ import { createBlockButton } from "../src/components/BlockButton.ts";
 
 const block = new Style({
   string: crayon.bgRed,
-  padding: { all: 2 },
+  padding: { y: 1, right: 2 },
 });
 const edge = block.derive({
   border: {
@@ -17,30 +17,29 @@ const edge = block.derive({
     style: crayon.bgRed.bold,
     type: "thick",
   },
-  padding: { all: 2 },
 });
 
 const BlockButton = createBlockButton((id, state) => {
   if (state === "active") {
     return new HorizontalBlock(
       {},
-      edge.create("Edge", { string: crayon.bgBlue, border: { style: crayon.bgBlue } }),
-      block.create("Block", { string: crayon.bgBlue }),
+      edge.create("", { string: crayon.bgBlue, border: { style: crayon.bgBlue } }),
+      block.create(id, { string: crayon.bgBlue }),
     );
   }
 
   if (state === "hover") {
     return new HorizontalBlock(
       {},
-      edge.create("Edge", { string: crayon.bgYellow, border: { style: crayon.bgYellow } }),
-      block.create("Block", { string: crayon.bgYellow }),
+      edge.create("", { string: crayon.bgYellow, border: { style: crayon.bgYellow } }),
+      block.create(id, { string: crayon.bgYellow }),
     );
   }
 
   return new HorizontalBlock(
     {},
-    edge.create("Edge"),
-    block.create("Block"),
+    edge.create(""),
+    block.create(id),
   );
 });
 
@@ -55,19 +54,19 @@ tui.render(() =>
     TextBox("Multiline textbox", {
       multiline: true,
     }),
-    BlockButton("id"),
+    BlockButton("BlockButton"),
     new HorizontalBlock(
       { height: "20%", width: "100%", gap: 4 },
       // ScrollView
       ScrollView(
         { id: "scroll-view", height: 5, width: 30 },
         Button("abc"),
-        Button("xyz"),
-        Button("abc"),
-        Button("xyz"),
-        Button("abc"),
-        Button("xyz"),
-        Button("end"),
+        Button("def"),
+        Button("ghi"),
+        Button("jkl"),
+        Button("zxc"),
+        Button("vbn"),
+        Button("mlp"),
       ),
       // Suspense
       new HorizontalBlock(
