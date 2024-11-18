@@ -1,55 +1,52 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "jsr:@beast/compat@^0.1.2": "jsr:@beast/compat@0.1.2",
-      "jsr:@crayon/color-support@2.1.0": "jsr:@crayon/color-support@2.1.0",
-      "jsr:@crayon/crayon@4.0.0-alpha.4": "jsr:@crayon/crayon@4.0.0-alpha.4",
-      "jsr:@tui/inputs@^0": "jsr:@tui/inputs@0.0.1",
-      "jsr:@tui/nice@^0.5": "jsr:@tui/nice@0.5.14",
-      "jsr:@tui/signals@^0": "jsr:@tui/signals@0.0.9",
-      "jsr:@tui/strings@^0": "jsr:@tui/strings@0.1.1"
+  "version": "4",
+  "specifiers": {
+    "jsr:@beast/compat@~0.1.2": "0.1.2",
+    "jsr:@crayon/color-support@2.1.0": "2.1.0",
+    "jsr:@crayon/crayon@4.0.0-alpha.4": "4.0.0-alpha.4",
+    "jsr:@tui/inputs@0": "0.0.1",
+    "jsr:@tui/nice@~0.6.1": "0.6.1",
+    "jsr:@tui/signals@0": "0.0.9",
+    "jsr:@tui/strings@0": "0.1.2"
+  },
+  "jsr": {
+    "@beast/compat@0.1.2": {
+      "integrity": "f7837b100e3f4518e114f823570a1a1a2e49efaa7ed41de12eb5e079749f573f"
     },
-    "jsr": {
-      "@beast/compat@0.1.2": {
-        "integrity": "f7837b100e3f4518e114f823570a1a1a2e49efaa7ed41de12eb5e079749f573f"
-      },
-      "@crayon/color-support@2.1.0": {
-        "integrity": "7901b177733e10526b78c2ca4f784550d6f7a38b992913f23ebcfc26ffee1398",
-        "dependencies": [
-          "jsr:@beast/compat@^0.1.2"
-        ]
-      },
-      "@crayon/crayon@4.0.0-alpha.4": {
-        "integrity": "812afa0488d6b2a3691d23540493b2280e627ed0aa88ed8161625327b24467b2"
-      },
-      "@tui/inputs@0.0.1": {
-        "integrity": "4310f1d6de2d5b25b0ca5030b4849535bda3e5c20ff1bce8dbfa1b753a315efd"
-      },
-      "@tui/nice@0.5.14": {
-        "integrity": "f1125180780761849594dd5cc750b66fb7cd50ce05993cf738a852b40d09951b",
-        "dependencies": [
-          "jsr:@tui/signals@^0",
-          "jsr:@tui/strings@^0"
-        ]
-      },
-      "@tui/signals@0.0.9": {
-        "integrity": "cc9da5e34bc896b3f8a22a5af896af23d11ce3df0325902b6aeb55f1695c4b2b"
-      },
-      "@tui/strings@0.1.1": {
-        "integrity": "fe9fa432e216458f539046947515a56c65b60b70ebe927b005422d329c25ad08"
-      }
+    "@crayon/color-support@2.1.0": {
+      "integrity": "7901b177733e10526b78c2ca4f784550d6f7a38b992913f23ebcfc26ffee1398",
+      "dependencies": [
+        "jsr:@beast/compat"
+      ]
+    },
+    "@crayon/crayon@4.0.0-alpha.4": {
+      "integrity": "812afa0488d6b2a3691d23540493b2280e627ed0aa88ed8161625327b24467b2"
+    },
+    "@tui/inputs@0.0.1": {
+      "integrity": "4310f1d6de2d5b25b0ca5030b4849535bda3e5c20ff1bce8dbfa1b753a315efd"
+    },
+    "@tui/nice@0.6.1": {
+      "integrity": "7db3e7b68744d9b085967d54ea78d58feb78f3f056f912309799e4b6c5e7eb0f",
+      "dependencies": [
+        "jsr:@tui/signals",
+        "jsr:@tui/strings"
+      ]
+    },
+    "@tui/signals@0.0.9": {
+      "integrity": "cc9da5e34bc896b3f8a22a5af896af23d11ce3df0325902b6aeb55f1695c4b2b"
+    },
+    "@tui/strings@0.1.2": {
+      "integrity": "bebbc352ca541e0b76bb7b7c42883e50ef419da5a4563ad0b9d349d6218ea648"
     }
   },
-  "remote": {},
   "workspace": {
     "dependencies": [
       "jsr:@crayon/color-support@2.1.0",
       "jsr:@crayon/crayon@4.0.0-alpha.4",
-      "jsr:@tui/inputs@^0",
-      "jsr:@tui/nice@^0.5",
-      "jsr:@tui/signals@^0",
-      "jsr:@tui/strings@^0"
+      "jsr:@tui/inputs@0",
+      "jsr:@tui/nice@~0.6.1",
+      "jsr:@tui/signals@0",
+      "jsr:@tui/strings@0"
     ]
   }
 }
