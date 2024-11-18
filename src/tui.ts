@@ -73,7 +73,6 @@ export class Tui {
     key: [],
     mouse: [],
     update: [],
-    resize: [],
   };
 
   constructor() {}
@@ -279,7 +278,7 @@ export class Tui {
           let { focusIndex, stateObjects } = this.globalState;
 
           let object: Block | undefined;
-          // Temporary workaround
+          // FIXME: Temporary workaround
           // Some objects which don't have root still persist
           // But they are not being computed
           // This ensures only visible item can be focused
