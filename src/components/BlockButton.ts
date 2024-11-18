@@ -12,20 +12,24 @@ interface ButtonState {
   pressed: boolean;
 }
 
-type BlockButtonCreator = (id: string, buttonClass: ButtonClass) => Block;
-type BlockButton = (id: string, options?: ButtonOptions) => BaseSignal<Block>;
+type BlockButtonContext<Data> = Data extends never ? string : ({ id: string } & Data);
 
-export function createBlockButton(creator: BlockButtonCreator): BlockButton {
+type BlockButtonCreator<Data = never> = (id: BlockButtonContext<Data>, buttonClass: ButtonClass) => Block;
+
+type BlockButton<Data> = (data: BlockButtonContext<Data>, options?: ButtonOptions) => BaseSignal<Block>;
+
+export function createBlockButton<Data>(creator: BlockButtonCreator<Data>): BlockButton<Data> {
   const getState = tui.createLocalStates<ButtonState>(() => ({
     class: signal("base"),
     pressed: false,
     block: undefined!,
   }));
 
-  return function BlockButton(id: string, options?: ButtonOptions): BaseSignal<Block> {
+  return function BlockButton(data: BlockButtonContext<Data>, options?: ButtonOptions): BaseSignal<Block> {
+    const id = typeof data === "string" ? data : data.id;
     const state = getState(id);
 
-    state.block ??= computed([state.class], (buttonClass) => creator(id, buttonClass));
+    state.block ??= computed([state.class], (buttonClass) => creator(data, buttonClass));
 
     state.associateBlock(state.block);
 
