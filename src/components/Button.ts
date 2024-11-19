@@ -1,6 +1,7 @@
 import { crayon } from "@crayon/crayon";
 import { Style, type StyleBlock } from "@tui/nice";
 import type { KeyPress } from "@tui/inputs";
+import type { BaseSignal } from "@tui/signals";
 
 import { tui } from "../tui.ts";
 import { intersects } from "./utils.ts";
@@ -18,7 +19,7 @@ interface ButtonState {
 export interface ButtonOptions {
   keybind?: Partial<KeyPress>;
   onClick?: () => void;
-  forceClass?: () => ButtonClass | undefined;
+  forceClass?: BaseSignal<ButtonClass | undefined>;
 }
 
 type Button = (text: string, options?: ButtonOptions) => ButtonBlock;
@@ -44,7 +45,7 @@ export function createButton(styles: Record<ButtonClass, Style>): Button {
         state.class = "base";
       }
 
-      state.block.style = styles[options?.forceClass?.() ?? state.class];
+      state.block.style = styles[options?.forceClass?.get() ?? state.class];
     });
 
     state.addEventListener("mouse", (mousePress) => {

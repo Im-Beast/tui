@@ -29,7 +29,10 @@ export function createBlockButton<Data = string>(creator: BlockButtonCreator<Dat
     const id = typeof data === "string" ? data : data.id;
     const state = getState(id);
 
-    state.block ??= computed([state.class], (buttonClass) => creator(data, buttonClass));
+    state.block ??= computed(
+      [state.class, options?.forceClass],
+      (buttonClass, forceClass) => creator(data, forceClass ?? buttonClass),
+    );
 
     state.associateBlock(state.block);
 
