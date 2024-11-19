@@ -12,13 +12,13 @@ interface ButtonState {
   pressed: boolean;
 }
 
-type BlockButtonContext<Data> = Data extends never ? string : ({ id: string } & Data);
+type BlockButtonContext<Data> = Data extends string ? string : ({ id: string } & Data);
 
-type BlockButtonCreator<Data = never> = (id: BlockButtonContext<Data>, buttonClass: ButtonClass) => Block;
+type BlockButtonCreator<Data> = (id: BlockButtonContext<Data>, buttonClass: ButtonClass) => Block;
 
 type BlockButton<Data> = (data: BlockButtonContext<Data>, options?: ButtonOptions) => BaseSignal<Block>;
 
-export function createBlockButton<Data>(creator: BlockButtonCreator<Data>): BlockButton<Data> {
+export function createBlockButton<Data = string>(creator: BlockButtonCreator<Data>): BlockButton<Data> {
   const getState = tui.createLocalStates<ButtonState>(() => ({
     class: signal("base"),
     pressed: false,
