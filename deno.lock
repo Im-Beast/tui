@@ -6,7 +6,8 @@
     "jsr:@crayon/crayon@4.0.0-alpha.4": "4.0.0-alpha.4",
     "jsr:@tui/inputs@0": "0.0.1",
     "jsr:@tui/nice@~0.6.1": "0.6.1",
-    "jsr:@tui/signals@0": "0.0.9",
+    "jsr:@tui/signals@0": "0.0.10",
+    "jsr:@tui/signals@^0.0.10": "0.0.10",
     "jsr:@tui/strings@0": "0.1.2"
   },
   "jsr": {
@@ -28,12 +29,15 @@
     "@tui/nice@0.6.1": {
       "integrity": "7db3e7b68744d9b085967d54ea78d58feb78f3f056f912309799e4b6c5e7eb0f",
       "dependencies": [
-        "jsr:@tui/signals",
+        "jsr:@tui/signals@0",
         "jsr:@tui/strings"
       ]
     },
     "@tui/signals@0.0.9": {
       "integrity": "cc9da5e34bc896b3f8a22a5af896af23d11ce3df0325902b6aeb55f1695c4b2b"
+    },
+    "@tui/signals@0.0.10": {
+      "integrity": "8fc07c63f63045f052db4d237c055e3c989d5606143b710ba01a3b3f97e099e9"
     },
     "@tui/strings@0.1.2": {
       "integrity": "bebbc352ca541e0b76bb7b7c42883e50ef419da5a4563ad0b9d349d6218ea648"
@@ -45,7 +49,7 @@
       "jsr:@crayon/crayon@4.0.0-alpha.4",
       "jsr:@tui/inputs@0",
       "jsr:@tui/nice@~0.6.1",
-      "jsr:@tui/signals@0",
+      "jsr:@tui/signals@^0.0.10",
       "jsr:@tui/strings@0"
     ]
   }
